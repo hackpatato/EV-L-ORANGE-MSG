@@ -25,6 +25,6 @@
 
 ## Setup & Environment Configuration
 
-
+> **Note:** AI tools were used to assist in writing the GUI components (`builder.nim` and `template.nim`), while all core application logic was developed independently.
 
 
