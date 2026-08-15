@@ -35,8 +35,3 @@ export DISCORD_CHANNEL="YOUR_CHANNEL_ID_HERE"
 
 
 
-
-
-
-
-
