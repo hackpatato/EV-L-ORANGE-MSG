@@ -27,10 +27,24 @@
 
 To keep sensitive secrets out of public GitHub repositories, set your credentials using environment variables before running the application:
 
+# Windows
+nim c -d:ssl -d:release src/evil_orange.nim
+
+# Linux
+nim c -d:ssl -d:release --os:linux src/evil_orange.nim 
+-----------------------------------------------------------------------------------
+#### CMD /WİNDOWS
+
+set DISCORD_TOKEN=YOUR_BOT_TOKEN_HERE
+set DISCORD_CHANNEL=YOUR_CHANNEL_ID_HERE 
+
+
+
 ### Linux / macOS
 ```bash
 export DISCORD_TOKEN="YOUR_BOT_TOKEN_HERE"
 export DISCORD_CHANNEL="YOUR_CHANNEL_ID_HERE"
+
 
 
 
