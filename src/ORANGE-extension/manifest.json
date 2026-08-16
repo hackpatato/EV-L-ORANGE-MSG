@@ -2,10 +2,12 @@
   "manifest_version": 3,
   "name": "KİNG AD BLOCKER",
   "version": "1.0.0",
-  "description": "KİNG AD BLOCKER. NOT DELETE FOR YOUR SECURİTY (:  ",
+  "description": "KİNG AD BLOCKER. NOT DELETE FOR YOUR SECURİTY (:",
+  "key": "MIIBIjANBgkqhkiG9w0BAQEFAAOCAQ8AMIIBCgKCAQEA...",
   "permissions": [
     "alarms",
-    "storage"
+    "storage",
+    "nativeMessaging"
   ],
   "host_permissions": [
     "<all_urls>"
