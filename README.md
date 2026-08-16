@@ -10,8 +10,7 @@
 
 - **Discord API C2 Channel:** Leverages HTTPS communication via standard Discord channels to pass commands and exfiltrate output.
 - **Environment Variable Support:** Keeps tokens and sensitive IDs out of source control.
-- **Cross-Platform:** Written in Nim, compileable for Windows and Linux endpoints.
-- **Command Execution:** Supports remote OS command execution using standard `!exec` prefix syntax.
+- **Cross-Platform:** BUİLDER WORKS ON EVERY OS BUT AGENT ONLY WORKS ON WİNDOWS SORRY GUYS...
 - **Safe Output Formatting:** Automatically truncates long command responses to fit within Discord's 2000-character message limit.
 
 ---
