@@ -31,9 +31,4 @@
 
 note : GERÇEKÇİ KONUŞMAK GEREKİRSE ŞUANDA ÇALIŞIP ÇALIŞMADIĞI HAKINDA EN KÜÇÜK BİR FİKRİM BİLE YOK....
 
-
-
-
-<p align="center">
-  <img src="LOGO.PNG" alt="Logo" width="200"/>
-</p>
+![Logo](./LOGO.PNG)
