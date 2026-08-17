@@ -34,4 +34,6 @@ note : GERÇEKÇİ KONUŞMAK GEREKİRSE ŞUANDA ÇALIŞIP ÇALIŞMADIĞI HAKINDA
 
 
 
-![](LOGO.PNG)
+<p align="center">
+  <img src="LOGO.PNG" alt="Logo" width="200"/>
+</p>
