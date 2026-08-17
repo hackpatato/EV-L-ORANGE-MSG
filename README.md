@@ -33,4 +33,4 @@ note : GERÇEKÇİ KONUŞMAK GEREKİRSE ŞUANDA ÇALIŞIP ÇALIŞMADIĞI HAKINDA
 
 
 
-![Logo](logo.png)
+![Logo](LOGO.png)
