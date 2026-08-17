@@ -30,3 +30,7 @@
 
 
 note : GERÇEKÇİ KONUŞMAK GEREKİRSE ŞUANDA ÇALIŞIP ÇALIŞMADIĞI HAKINDA EN KÜÇÜK BİR FİKRİM BİLE YOK....
+
+
+
+![Logo](logo.png)
