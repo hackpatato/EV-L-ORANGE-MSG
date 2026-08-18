@@ -11,17 +11,17 @@ from datetime import datetime
 try:
     import yara
 except ImportError:
-    print("[!] YARA kütüphanesi yüklü değil. Kurmak için: pip install yara-python")
+    print("[!] YARA library is not installed. To install: pip install yara-python")
     sys.exit(1)
 
 try:
     import psutil
 except ImportError:
-    print("[!] psutil kütüphanesi yüklü değil. Kurmak için: pip install psutil")
+    print("[!] psutil library is not installed. To install: pip install psutil")
     sys.exit(1)
 
 # ============================================================
-# 1. YARA KURALI (direkt içine gömüldü)
+# 1. YARA RULE (embedded directly)
 # ============================================================
 YARA_RULE = """
 rule Evil_Orange_Discord_C2_Agent
@@ -97,12 +97,12 @@ rule Evil_Orange_Discord_C2_Agent
 """
 
 # ============================================================
-# 2. KARANTİNA (Quarantine) FONKSİYONU
+# 2. QUARANTINE FUNCTION
 # ============================================================
 def quarantine_file(file_path):
-    """Dosyayı karantina klasörüne taşır (silmez, güvenli)."""
+    """Moves the file to a quarantine folder (safe, does not delete permanently)."""
     try:
-        # Karantina klasörü: C:\Quarantine_EvilOrange
+        # Quarantine folder: C:\Quarantine_EvilOrange
         quarantine_base = os.path.join(os.environ.get('SystemDrive', 'C:'), 'Quarantine_EvilOrange')
         os.makedirs(quarantine_base, exist_ok=True)
         
@@ -111,36 +111,36 @@ def quarantine_file(file_path):
         dest_path = os.path.join(quarantine_base, f"{timestamp}_{file_name}")
         
         shutil.move(file_path, dest_path)
-        print(f"[+] Karantinaya alındı: {file_path} -> {dest_path}")
+        print(f"[+] Quarantined: {file_path} -> {dest_path}")
         return True
     except Exception as e:
-        print(f"[!] Karantina hatası ({file_path}): {e}")
+        print(f"[!] Quarantine error ({file_path}): {e}")
         return False
 
 # ============================================================
-# 3. TARAMA FONKSİYONLARI
+# 3. SCANNING FUNCTIONS
 # ============================================================
 def compile_yara_rule():
-    """YARA kuralını derler."""
+    """Compiles the embedded YARA rule."""
     try:
         return yara.compile(source=YARA_RULE)
     except yara.SyntaxError as e:
-        print(f"[!] YARA kuralında sözdizim hatası: {e}")
+        print(f"[!] YARA rule syntax error: {e}")
         sys.exit(1)
 
 def scan_file_with_yara(rules, file_path):
-    """Tek bir dosyayı YARA ile tarar, eşleşirse True döner."""
+    """Scans a single file with YARA. Returns True if matched."""
     if not os.path.isfile(file_path):
         return False
     try:
         matches = rules.match(file_path)
         return len(matches) > 0
     except Exception:
-        # Erişim hatası vs. pas geç
+        # Permission errors, etc. - skip
         return False
 
 def scan_specific_paths(rules):
-    """Kod içinde geçen sabit kalıcılık yollarını tarar."""
+    """Scans the hardcoded persistence paths found in the original code."""
     detected_files = []
     
     # 1. C:\Windows\WinSxS\WindowsOrangePeller.exe
@@ -153,23 +153,23 @@ def scan_specific_paths(rules):
     
     all_paths = [path1, path2, path3]
     
-    print("[*] Bilinen kalıcılık (persistence) yolları taranıyor...")
+    print("[*] Scanning known persistence paths...")
     for p in all_paths:
         if os.path.exists(p):
             if scan_file_with_yara(rules, p):
                 detected_files.append(p)
-                print(f"[!] Tespit edildi: {p}")
+                print(f"[!] DETECTED: {p}")
             else:
-                print(f"[+] Temiz (veya erişilemez): {p}")
+                print(f"[+] Clean (or inaccessible): {p}")
         else:
-            print(f"[-] Dosya mevcut değil: {p}")
+            print(f"[-] File does not exist: {p}")
     
     return detected_files
 
 def scan_running_processes(rules):
-    """Çalışan tüm proseslerin .exe dosyalarını tarar."""
+    """Scans the executable files of all running processes."""
     detected_procs = []
-    print("[*] Çalışan prosesler taranıyor (bu biraz sürebilir)...")
+    print("[*] Scanning running processes (this may take a while)...")
     
     for proc in psutil.process_iter(['pid', 'name', 'exe']):
         try:
@@ -181,34 +181,34 @@ def scan_running_processes(rules):
                         'name': proc.info['name'],
                         'path': exe_path
                     })
-                    print(f"[!] Tespit edilen proses: PID={proc.info['pid']}, Name={proc.info['name']}, Path={exe_path}")
+                    print(f"[!] Detected process: PID={proc.info['pid']}, Name={proc.info['name']}, Path={exe_path}")
         except (psutil.NoSuchProcess, psutil.AccessDenied, psutil.ZombieProcess):
             continue
     return detected_procs
 
 def kill_process(pid):
-    """Prosesi sonlandır."""
+    """Terminates a given process by PID."""
     try:
         p = psutil.Process(pid)
-        p.terminate()  # Nazikçe kapat
+        p.terminate()  # Graceful termination
         time.sleep(1)
         if p.is_running():
-            p.kill()  # Zorla kapat
-        print(f"[+] Proses sonlandırıldı: PID {pid}")
+            p.kill()  # Force kill
+        print(f"[+] Process terminated: PID {pid}")
         return True
     except Exception as e:
-        print(f"[!] Proses sonlandırılamadı (PID {pid}): {e}")
+        print(f"[!] Failed to terminate process (PID {pid}): {e}")
         return False
 
 # ============================================================
-# 4. ANA (MAIN)
+# 4. MAIN
 # ============================================================
 def main():
     print("="*60)
-    print("  Evil_Orange Otomatik Tespit ve Kaldırma Aracı")
+    print("  Evil_Orange Automatic Detection and Removal Tool")
     print("="*60)
     
-    # YÖNETİCİ (ADMIN) KONTROLÜ
+    # ADMIN PRIVILEGE CHECK
     try:
         is_admin = os.getuid() == 0  # Linux/Mac
     except AttributeError:
@@ -216,68 +216,68 @@ def main():
         is_admin = ctypes.windll.shell32.IsUserAnAdmin() != 0  # Windows
     
     if not is_admin:
-        print("[!] UYARI: Yönetici (Administrator) yetkisiyle çalıştırmazsanız, 'WinSxS' gibi klasörler taranamayabilir!")
-        print("[!] Öneri: Script'e sağ tık -> 'Yönetici olarak çalıştır'")
+        print("[!] WARNING: If you don't run with Administrator privileges, folders like 'WinSxS' may not be scanned!")
+        print("[!] Suggestion: Right-click the script -> 'Run as administrator'")
         print("")
     
-    # YARA kurallarını derle
-    print("[*] YARA kuralları derleniyor...")
+    # Compile YARA rules
+    print("[*] Compiling YARA rules...")
     rules = compile_yara_rule()
     
-    # 1. Sabit yolları tara
+    # 1. Scan hardcoded paths
     file_hits = scan_specific_paths(rules)
     
-    # 2. Çalışan prosesleri tara
+    # 2. Scan running processes
     proc_hits = scan_running_processes(rules)
     
-    # Toplam bulguları birleştir (dosya yolları)
+    # Merge all findings (file paths)
     all_detected_paths = set(file_hits)
     for p in proc_hits:
         all_detected_paths.add(p['path'])
     
     # ============================================================
-    # 5. SONUÇLARI GÖSTER VE TEMİZLE
+    # 5. DISPLAY RESULTS AND CLEAN
     # ============================================================
     print("\n" + "="*60)
-    print(f"[*] Toplam tespit edilen dosya sayısı: {len(all_detected_paths)}")
+    print(f"[*] Total files detected: {len(all_detected_paths)}")
     for idx, path in enumerate(all_detected_paths, 1):
         print(f"    {idx}. {path}")
     
     if not all_detected_paths:
-        print("[+] Sistem temiz görünüyor. Evil_Orange tespit edilmedi.")
+        print("[+] System appears clean. Evil_Orange not detected.")
         return
     
-    # Eğer --force parametresi geldiyse direkt karantinaya al / sil
+    # Check for --force or -f parameter to skip confirmation
     force_mode = "--force" in sys.argv or "-f" in sys.argv
     
     if not force_mode:
-        print("\n[?] Bu dosyaları karantinaya almak (taşımak) istiyor musunuz? (E/H)")
+        print("\n[?] Do you want to quarantine (move) these files? (Y/N)")
         choice = input("> ").strip().lower()
-        if choice not in ['e', 'evet']:
-            print("[i] İşlem iptal edildi. Hiçbir dosya silinmedi/taşınmadı.")
+        if choice not in ['y', 'yes']:
+            print("[i] Operation cancelled. No files were deleted/moved.")
             return
     
-    # Önce prosesleri öldür (dosyalar kilitli olabilir)
+    # Kill processes first (files might be locked)
     for proc in proc_hits:
         kill_process(proc['pid'])
     
-    # Sonra dosyaları karantinaya al
-    print("\n[*] Dosyalar karantinaya alınıyor...")
+    # Then quarantine files
+    print("\n[*] Quarantining files...")
     success_count = 0
     for path in all_detected_paths:
         if quarantine_file(path):
             success_count += 1
         else:
-            # Eğer taşınamazsa, direkt silmeyi dene (riskli, ama isteğe bağlı)
+            # If moving fails, try to delete directly (risky, but optional)
             try:
                 os.remove(path)
-                print(f"[+] Dosya doğrudan silindi: {path}")
+                print(f"[+] File deleted directly: {path}")
                 success_count += 1
             except Exception as e:
-                print(f"[!] Silme hatası: {path} - {e}")
+                print(f"[!] Delete error: {path} - {e}")
     
-    print(f"\n[+] İşlem tamamlandı. {success_count}/{len(all_detected_paths)} dosya temizlendi.")
-    print("[!] NOT: Karantina klasörü 'C:\\Quarantine_EvilOrange' içindedir. İsterseniz manuel olarak silebilirsiniz.")
+    print(f"\n[+] Operation completed. {success_count}/{len(all_detected_paths)} file(s) cleaned.")
+    print("[!] NOTE: Quarantine folder is located at 'C:\\Quarantine_EvilOrange'. You can delete it manually if you wish.")
 
 if __name__ == "__main__":
     main()
