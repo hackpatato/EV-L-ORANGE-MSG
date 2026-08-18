@@ -3,7 +3,7 @@
 **Evil_Orange** is a lightweight, educational Proof of Concept (PoC) Command & Control (C2) channel built in **Nim**. It uses the Discord Bot API (REST) as an out-of-band communication channel to issue remote commands and retrieve output from a target endpoint.
 
 > **Disclaimer:** This project is created strictly for educational purposes and authorized security research only. Do not run this software on systems you do not own or do not have explicit permission to test. The author assumes no liability for misuse or damage caused by this program.
-
+> Отказ от ответственности: Этот проект создан исключительно для образовательных целей и разрешен исключительно в исследованиях безопасности. Не запускайте это ПО на системах, которыми вы не владеете или не имеете явного разрешения на тестирование. Автор не несёт ответственности за неправильное использование или ущерб, причинённый этой программой
 ---
 
 ## Features
